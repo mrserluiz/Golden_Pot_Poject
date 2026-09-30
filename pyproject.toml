@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "golden-pot"
+version = "0.1.0"
+description = "Safe and generic folder comparison tool"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Sergio Luiz" }]
+dependencies = []
+
+[project.scripts]
+golden-pot = "golden_pot.cli:main"
+golden-pot-gui = "golden_pot.gui:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
