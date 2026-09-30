@@ -1,0 +1,13 @@
+{
+  "hash_algorithm": "sha256",
+  "protected_paths": [
+    "manifest.json",
+    "textures/block/crop/"
+  ],
+  "ignored_paths": [
+    ".git/",
+    "reports/",
+    "output/",
+    "__pycache__/"
+  ]
+}
