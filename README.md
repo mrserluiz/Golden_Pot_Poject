@@ -26,7 +26,21 @@ Golden Pot classifies every relative path as:
 
 It produces a detailed JSON report and a human-readable TXT report.
 
-## Requirements
+## Download for Windows
+
+Download `GoldenPot.exe` from the latest GitHub release. It is a portable
+application: no installation or separate Python download is required.
+
+1. Open `GoldenPot.exe`.
+2. Select the base folder and the comparison folder.
+3. Select where the reports will be saved.
+4. Click **Analyze folders**.
+
+Windows may display a SmartScreen warning because this community build is not
+digitally signed. Use **More info** and **Run anyway** only when the file was
+downloaded from this official repository.
+
+## Requirements for running from source
 
 - Python 3.11 or newer.
 - Tkinter for the graphical interface. It is included with the standard Windows
@@ -60,19 +74,19 @@ Select the base folder, comparison folder, and report destination, then click
 ## Command line
 
 ```powershell
-python -m golden_pot compare `
-  --base "E:\Packs\Main" `
-  --comparison "E:\Packs\New" `
+python -m golden_pot compare \`
+  --base "E:\Packs\Main" \`
+  --comparison "E:\Packs\New" \`
   --output "E:\Packs\Reports"
 ```
 
 To use a custom configuration:
 
 ```powershell
-python -m golden_pot compare `
-  --base "E:\Folder A" `
-  --comparison "E:\Folder B" `
-  --output "E:\Reports" `
+python -m golden_pot compare \`
+  --base "E:\Folder A" \`
+  --comparison "E:\Folder B" \`
+  --output "E:\Reports" \`
   --config "E:\golden-pot.json"
 ```
 
@@ -106,6 +120,19 @@ Run the automated tests from the repository root:
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+### Build the Windows executable
+
+Install PyInstaller and build from the repository root on Windows:
+
+```powershell
+python -m pip install . pyinstaller
+python -m PyInstaller --noconfirm --clean GoldenPot.spec
+```
+
+The executable will be created at `dist/GoldenPot.exe`. The GitHub Actions
+workflow performs the same build, runs the tests, and attaches the executable
+to every tagged release.
 
 ## Project roadmap
 
