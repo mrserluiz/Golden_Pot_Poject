@@ -1,9 +1,6 @@
 {
   "hash_algorithm": "sha256",
-  "protected_paths": [
-    "manifest.json",
-    "textures/block/crop/"
-  ],
+  "protected_paths": [],
   "ignored_paths": [
     ".git/",
     "reports/",
