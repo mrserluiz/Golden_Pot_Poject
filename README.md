@@ -1,12 +1,12 @@
 # Golden Pot
 
-Golden Pot is a safe, generic folder comparison tool. It was originally designed
+Golden Pot is a safe, generic folder comparison and merge tool. It was designed
 to compare an accumulated Minecraft Bedrock resource pack with a new Rainbow
 output, but it does not depend on Minecraft, Rainbow, Geyser, or any specific
 folder structure.
 
-The current version is **v0.1 (Comparator)**. It is read-only: Golden Pot never
-copies, edits, overwrites, or removes files while comparing folders.
+The current version is **v0.2 (Safe Merge)**. It can create a third, updated
+folder while leaving the base and comparison folders untouched.
 
 ## What it does
 
@@ -26,6 +26,23 @@ Golden Pot classifies every relative path as:
 
 It produces a detailed JSON report and a human-readable TXT report.
 
+When creating an updated texture, Golden Pot copies the base into a new output,
+adds new files from the comparison folder, replaces changed non-protected files,
+and preserves base-only and protected files. The output must be new or empty.
+
+## Interface and languages
+
+The graphical interface includes the official Golden Pot logo in the window,
+header, taskbar, and Windows executable. The language selector changes the
+interface immediately and supports:
+
+- Portuguese
+- English
+- Spanish
+- Chinese
+- Russian
+- Japanese
+
 ## Download for Windows
 
 Download `GoldenPot.exe` from the latest GitHub release. It is a portable
@@ -33,8 +50,8 @@ application: no installation or separate Python download is required.
 
 1. Open `GoldenPot.exe`.
 2. Select the base folder and the comparison folder.
-3. Select where the reports will be saved.
-4. Click **Analyze folders**.
+3. Select where the reports and updated texture will be saved.
+4. Click **Create updated texture**.
 
 Windows may display a SmartScreen warning because this community build is not
 digitally signed. Use **More info** and **Run anyway** only when the file was
@@ -71,6 +88,9 @@ You can also run `python -m golden_pot` from an editable development installatio
 Select the base folder, comparison folder, and report destination, then click
 **Analyze folders**.
 
+To create a merged texture, also select a new/empty destination and click
+**Create updated texture**.
+
 ## Command line
 
 ```powershell
@@ -88,6 +108,16 @@ python -m golden_pot compare \`
   --comparison "E:\Folder B" \`
   --output "E:\Reports" \`
   --config "E:\golden-pot.json"
+```
+
+To create an updated folder from the base plus Rainbow changes:
+
+```powershell
+python -m golden_pot merge \
+  --base "E:\Packs\EtherTexture Bedrock" \
+  --comparison "C:\Users\You\AppData\Roaming\.minecraft\rainbow\T05" \
+  --output "E:\Packs\EtherTexture Updated" \
+  --reports "E:\Packs\Reports"
 ```
 
 ## Configuration
