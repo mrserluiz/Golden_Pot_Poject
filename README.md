@@ -5,8 +5,8 @@ to compare an accumulated Minecraft Bedrock resource pack with a new Rainbow
 output, but it does not depend on Minecraft, Rainbow, Geyser, or any specific
 folder structure.
 
-The current version is **v0.2 (Safe Merge)**. It can create a third, updated
-folder while leaving the base and comparison folders untouched.
+The current version is **v0.3 (Semantic Geyser Merge)**. It creates a third,
+updated folder while leaving the base and comparison folders untouched.
 
 ## What it does
 
@@ -27,8 +27,9 @@ Golden Pot classifies every relative path as:
 It produces a detailed JSON report and a human-readable TXT report.
 
 When creating an updated texture, Golden Pot copies the base into a new output,
-adds new files from the comparison folder, replaces changed non-protected files,
-and preserves base-only and protected files. The output must be new or empty.
+adds new Rainbow files, semantically merges Geyser mappings and Bedrock texture
+registries, updates the manifest version, validates mapping-to-texture paths,
+and rebuilds `pack.zip`. The output must be new or empty.
 
 ## Interface and languages
 
@@ -128,7 +129,6 @@ The default configuration is located at `config/golden-pot.json`.
 {
   "hash_algorithm": "sha256",
   "protected_paths": [
-    "manifest.json",
     "textures/block/crop/"
   ],
   "ignored_paths": [
@@ -168,6 +168,6 @@ to every tagged release.
 
 - **v0.1**: generic read-only folder comparison and reports.
 - **v0.2**: optional safe merge into a new output folder.
-- **v0.3**: semantic merge strategies for JSON and other structured files.
+- **v0.3**: semantic Geyser mapping merge, validation, and rebuilt `pack.zip`.
 
 The original files will remain untouched by default in every future version.

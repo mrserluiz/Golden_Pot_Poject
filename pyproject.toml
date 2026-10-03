@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "golden-pot"
-version = "0.2.0"
+version = "0.3.0"
 description = "Safe folder comparison and merge tool"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -20,3 +20,6 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+golden_pot = ["assets/*.png", "assets/*.ico"]

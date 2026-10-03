@@ -1,12 +1,37 @@
 # -*- mode: python ; coding: utf-8 -*-
-import base64
-import sys
+
 from pathlib import Path
+
+
 project_root = Path(SPECPATH)
-sys.path.insert(0, str(project_root / "src"))
-ICON_ICO_BASE64 = "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"
-icon_path = project_root / "build_icon.ico"
-icon_path.write_bytes(base64.b64decode(ICON_ICO_BASE64))
-a = Analysis([str(project_root / "golden_pot_launcher.py")], pathex=[str(project_root / "src")], binaries=[], datas=[], hiddenimports=[], hookspath=[], hooksconfig={}, runtime_hooks=[], excludes=[], noarchive=False)
+assets_path = project_root / "src" / "golden_pot" / "assets"
+icon_path = assets_path / "icon1.ico"
+
+a = Analysis(
+    [str(project_root / "golden_pot_launcher.py")],
+    pathex=[str(project_root / "src")],
+    binaries=[],
+    datas=[(str(assets_path), "golden_pot/assets")],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+)
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, a.binaries, a.datas, [], name="GoldenPot", debug=False, bootloader_ignore_signals=False, strip=False, upx=True, console=False, icon=str(icon_path))
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.datas,
+    [],
+    name="GoldenPot",
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    icon=str(icon_path),
+)
