@@ -26,15 +26,23 @@ class ComparatorTests(unittest.TestCase):
             (comparison / "new.txt").write_text("add", encoding="utf-8")
             (base / "manifest.json").write_text("old", encoding="utf-8")
             (comparison / "manifest.json").write_text("new", encoding="utf-8")
+            (base / "textures" / "block" / "crop").mkdir(parents=True)
+            (comparison / "textures" / "block" / "crop").mkdir(parents=True)
+            (base / "textures" / "block" / "crop" / "wheat.png").write_bytes(b"old")
+            (comparison / "textures" / "block" / "crop" / "wheat.png").write_bytes(b"new")
 
-            report = compare_directories(base, comparison, GoldenPotConfig())
+            report = compare_directories(
+                base, comparison,
+                GoldenPotConfig(protected_paths=("textures/block/crop/",)),
+            )
             statuses = {item.relative_path: item.status for item in report.items}
 
             self.assertEqual(statuses["same.txt"], FileStatus.UNCHANGED)
             self.assertEqual(statuses["changed.txt"], FileStatus.MODIFIED)
             self.assertEqual(statuses["old.txt"], FileStatus.PRESERVED)
             self.assertEqual(statuses["new.txt"], FileStatus.ADDED)
-            self.assertEqual(statuses["manifest.json"], FileStatus.PROTECTED)
+            self.assertEqual(statuses["manifest.json"], FileStatus.MODIFIED)
+            self.assertEqual(statuses["textures/block/crop/wheat.png"], FileStatus.PROTECTED)
 
     def test_same_folder_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as workspace:
