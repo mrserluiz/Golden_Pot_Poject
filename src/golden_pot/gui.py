@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import queue
+import math
+import sys
 import threading
 import tkinter as tk
+from contextlib import ExitStack
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from .comparator import compare_directories
-from .branding import LOGO_PNG_BASE64
 from .config import GoldenPotConfig, load_config
 from .i18n import LANGUAGES, detect_language, translate
 from .merger import create_merged_folder
 from .reporter import write_reports
+from .source_adapter import normalized_source
 
 
 class GoldenPotApp(tk.Tk):
@@ -28,8 +31,12 @@ class GoldenPotApp(tk.Tk):
         self.config_var = tk.StringVar()
         self.status_var = tk.StringVar(value=self._t("ready"))
         self.events: queue.Queue[tuple[str, object]] = queue.Queue()
-        self.logo_image: tk.PhotoImage | None = None
+        self.app_icon: tk.PhotoImage | None = None
         self.header_logo: tk.PhotoImage | None = None
+        self.cloud_image: tk.PhotoImage | None = None
+        self._animation_generation = 0
+        self._progress_running = False
+        self._progress_offset = 0
         self._load_images()
         self._build_ui()
 
@@ -38,15 +45,24 @@ class GoldenPotApp(tk.Tk):
 
     def _load_images(self) -> None:
         try:
-            self.logo_image = tk.PhotoImage(data=LOGO_PNG_BASE64)
-            self.iconphoto(True, self.logo_image)
-            self.header_logo = self.logo_image
-        except tk.TclError:
-            self.logo_image = None
+            self.app_icon = tk.PhotoImage(file=self._asset_path("icon1.png"))
+            self.header_logo = tk.PhotoImage(file=self._asset_path("icon2.png"))
+            self.cloud_image = tk.PhotoImage(file=self._asset_path("cloud.png"))
+            self.iconphoto(True, self.app_icon)
+        except (tk.TclError, OSError):
+            self.app_icon = None
             self.header_logo = None
+            self.cloud_image = None
+
+    @staticmethod
+    def _asset_path(name: str) -> str:
+        if getattr(sys, "frozen", False):
+            return str(Path(sys._MEIPASS) / "golden_pot" / "assets" / name)
+        return str(Path(__file__).resolve().parent / "assets" / name)
 
     def _build_ui(self) -> None:
         self.title(self._t("title"))
+        self._animation_generation += 1
         if hasattr(self, "root_frame"):
             self.root_frame.destroy()
         root = self.root_frame = ttk.Frame(self, padding=20)
@@ -54,12 +70,19 @@ class GoldenPotApp(tk.Tk):
 
         header = ttk.Frame(root)
         header.pack(fill="x", pady=(0, 18))
+        art = tk.Canvas(header, height=112, highlightthickness=0, background="#f0f0f0")
+        art.pack(side="left", fill="x", expand=True)
         if self.header_logo is not None:
-            ttk.Label(header, image=self.header_logo).pack(side="left", padx=(0, 14))
-        heading = ttk.Frame(header)
-        heading.pack(side="left", fill="x", expand=True)
-        ttk.Label(heading, text="Golden Pot", font=("Segoe UI", 22, "bold")).pack(anchor="w")
-        ttk.Label(heading, text=self._t("subtitle")).pack(anchor="w")
+            art.create_image(55, 56, image=self.header_logo)
+        art.create_text(112, 42, text="Golden Pot", anchor="w", font=("Segoe UI", 22, "bold"), fill="#172117")
+        art.create_text(112, 72, text=self._t("subtitle"), anchor="w", font=("Segoe UI", 9), fill="#424942")
+        cloud_specs = ((255, 24, 0), (350, 57, 11), (455, 28, 22))
+        self._clouds: list[tuple[int, float, int]] = []
+        if self.cloud_image is not None:
+            for x, y, phase in cloud_specs:
+                cloud_id = art.create_image(x, y, image=self.cloud_image)
+                self._clouds.append((cloud_id, y, phase))
+        self._animate_clouds(art, self._animation_generation)
         language_box = ttk.Frame(header)
         language_box.pack(side="right", anchor="ne")
         ttk.Label(language_box, text=self._t("language")).pack(anchor="e")
@@ -94,7 +117,7 @@ class GoldenPotApp(tk.Tk):
         self.analyze_button.pack(side="left")
         self.merge_button = ttk.Button(actions, text=self._t("merge"), command=self._start_merge)
         self.merge_button.pack(side="left", padx=(10, 0))
-        self.progress = ttk.Progressbar(root, mode="indeterminate")
+        self.progress = tk.Canvas(root, height=18, highlightthickness=1, highlightbackground="#aeb8ae", background="#f4f4f4")
         self.progress.pack(fill="x", pady=(0, 10))
         ttk.Label(root, textvariable=self.status_var).pack(anchor="w", pady=(0, 10))
         self.result = tk.Text(root, height=14, wrap="word", state="disabled")
@@ -143,7 +166,7 @@ class GoldenPotApp(tk.Tk):
     def _start_worker(self, merge: bool) -> None:
         self.analyze_button.configure(state="disabled")
         self.merge_button.configure(state="disabled")
-        self.progress.start(10)
+        self._start_progress()
         self.status_var.set(self._t("merging") if merge else self._t("analyzing"))
         self._set_result("")
         threading.Thread(target=self._analyze_worker, args=(merge,), daemon=True).start()
@@ -156,11 +179,14 @@ class GoldenPotApp(tk.Tk):
                 if self.config_var.get()
                 else GoldenPotConfig()
             )
-            report = compare_directories(
-                self.base_var.get(), self.comparison_var.get(), config
-            )
+            with ExitStack() as stack:
+                base = stack.enter_context(normalized_source(self.base_var.get()))
+                comparison = stack.enter_context(normalized_source(self.comparison_var.get()))
+                report = compare_directories(base, comparison, config)
+                merge_result = create_merged_folder(report, self.merged_var.get()) if merge else None
+            report.base_folder = self.base_var.get()
+            report.comparison_folder = self.comparison_var.get()
             paths = write_reports(report, self.output_var.get())
-            merge_result = create_merged_folder(report, self.merged_var.get()) if merge else None
             self.events.put(("success", (report, paths, merge_result)))
         except Exception as error:
             self.events.put(("error", error))
@@ -171,7 +197,7 @@ class GoldenPotApp(tk.Tk):
         except queue.Empty:
             self.after(100, self._poll_events)
             return
-        self.progress.stop()
+        self._stop_progress()
         self.analyze_button.configure(state="normal")
         self.merge_button.configure(state="normal")
         if event == "error":
@@ -197,6 +223,9 @@ class GoldenPotApp(tk.Tk):
                 f"{self._t('added_to_output')}: {merge_result.added_from_comparison}",
                 f"{self._t('updated_in_output')}: {merge_result.updated_from_comparison}",
                 f"{self._t('preserved_in_output')}: {merge_result.copied_from_base}",
+                f"{self._t('merged_mappings')}: {merge_result.merged_json_files}",
+                f"{self._t('rebuilt_pack')}: {merge_result.rebuilt_pack}",
+                f"{self._t('mapping_warnings')}: {len(merge_result.warnings)}",
             ])
         self._set_result("\n".join(lines))
         self.status_var.set(self._t("merge_finished") if merge_result else self._t("finished"))
@@ -212,6 +241,40 @@ class GoldenPotApp(tk.Tk):
         self.result.delete("1.0", "end")
         self.result.insert("1.0", text)
         self.result.configure(state="disabled")
+
+    def _animate_clouds(self, canvas: tk.Canvas, generation: int, tick: int = 0) -> None:
+        if generation != self._animation_generation or not canvas.winfo_exists():
+            return
+        for cloud_id, base_y, phase in self._clouds:
+            x, _ = canvas.coords(cloud_id)
+            canvas.coords(cloud_id, x, base_y + math.sin((tick + phase) / 10) * 5)
+        self.after(70, self._animate_clouds, canvas, generation, tick + 1)
+
+    def _start_progress(self) -> None:
+        self._progress_running = True
+        self._progress_offset = 0
+        self._animate_progress()
+
+    def _stop_progress(self) -> None:
+        self._progress_running = False
+        self.progress.delete("all")
+
+    def _animate_progress(self) -> None:
+        if not self._progress_running:
+            return
+        self.progress.delete("all")
+        width = max(self.progress.winfo_width(), 1)
+        height = max(self.progress.winfo_height(), 18)
+        colors = ("#ef3340", "#ff8c1a", "#ffd43b", "#38b000", "#2693ff", "#6f42c1")
+        stripe_width = 52
+        start = self._progress_offset - stripe_width
+        stripe = 0
+        while start < width:
+            self.progress.create_rectangle(start, 0, start + stripe_width + 1, height, fill=colors[stripe % len(colors)], outline="")
+            start += stripe_width
+            stripe += 1
+        self._progress_offset = (self._progress_offset + 7) % stripe_width
+        self.after(55, self._animate_progress)
 
 
 def main() -> int:

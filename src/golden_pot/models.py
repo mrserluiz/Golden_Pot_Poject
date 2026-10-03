@@ -57,7 +57,7 @@ class ComparisonReport:
 
     def to_dict(self) -> dict:
         return {
-            "golden_pot_version": "0.2.0",
+            "golden_pot_version": "0.3.0",
             "generated_at": self.generated_at,
             "base_folder": self.base_folder,
             "comparison_folder": self.comparison_folder,

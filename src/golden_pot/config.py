@@ -6,7 +6,7 @@ from pathlib import Path, PurePosixPath
 
 
 DEFAULT_IGNORED_PATHS = [".git/", "reports/", "output/", "__pycache__/"]
-DEFAULT_PROTECTED_PATHS = ["manifest.json", "textures/block/crop/"]
+DEFAULT_PROTECTED_PATHS: list[str] = []
 
 
 def normalize_rule(value: str) -> str:
@@ -34,7 +34,7 @@ class GoldenPotConfig:
     def from_dict(cls, data: dict) -> "GoldenPotConfig":
         algorithm = str(data.get("hash_algorithm", "sha256")).lower()
         if algorithm != "sha256":
-            raise ValueError("Golden Pot v0.1 currently supports only SHA-256")
+            raise ValueError("Golden Pot currently supports only SHA-256")
         protected = tuple(
             normalize_rule(str(item))
             for item in data.get("protected_paths", DEFAULT_PROTECTED_PATHS)

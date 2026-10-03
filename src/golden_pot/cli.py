@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import argparse
 import sys
+from contextlib import ExitStack
 
 from . import __version__
 from .comparator import compare_directories
 from .config import load_config
 from .merger import create_merged_folder
 from .reporter import write_reports
+from .source_adapter import normalized_source
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -35,7 +37,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def run_compare(args: argparse.Namespace) -> int:
     config = load_config(args.config)
-    report = compare_directories(args.base, args.comparison, config)
+    with ExitStack() as stack:
+        base = stack.enter_context(normalized_source(args.base))
+        comparison = stack.enter_context(normalized_source(args.comparison))
+        report = compare_directories(base, comparison, config)
+    report.base_folder = str(args.base)
+    report.comparison_folder = str(args.comparison)
     json_path, text_path = write_reports(report, args.output)
     summary = report.summary
     print("Golden Pot comparison completed.")
@@ -48,13 +55,21 @@ def run_compare(args: argparse.Namespace) -> int:
 
 def run_merge(args: argparse.Namespace) -> int:
     config = load_config(args.config)
-    report = compare_directories(args.base, args.comparison, config)
+    with ExitStack() as stack:
+        base = stack.enter_context(normalized_source(args.base))
+        comparison = stack.enter_context(normalized_source(args.comparison))
+        report = compare_directories(base, comparison, config)
+        result = create_merged_folder(report, args.output)
+    report.base_folder = str(args.base)
+    report.comparison_folder = str(args.comparison)
     json_path, text_path = write_reports(report, args.reports)
-    result = create_merged_folder(report, args.output)
     print(f"Updated folder: {result.output_folder}")
     print(f"Added: {result.added_from_comparison}")
     print(f"Updated: {result.updated_from_comparison}")
     print(f"Preserved from base: {result.copied_from_base}")
+    print(f"Merged mappings/registries: {result.merged_json_files}")
+    print(f"Mapping/texture warnings: {len(result.warnings)}")
+    print(f"Rebuilt pack: {result.rebuilt_pack}")
     print(f"JSON report: {json_path}")
     print(f"Text report: {text_path}")
     return 0
