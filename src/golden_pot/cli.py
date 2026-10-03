@@ -6,13 +6,14 @@ import sys
 from . import __version__
 from .comparator import compare_directories
 from .config import load_config
+from .merger import create_merged_folder
 from .reporter import write_reports
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="golden-pot",
-        description="Safely compare any two folders without changing them.",
+        description="Safely compare and merge folders without changing the sources.",
     )
     parser.add_argument("--version", action="version", version=__version__)
     subparsers = parser.add_subparsers(dest="command")
@@ -23,6 +24,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     compare.add_argument("--output", required=True, help="Folder for generated reports")
     compare.add_argument("--config", help="Optional JSON configuration file")
+    merge = subparsers.add_parser("merge", help="Create an updated folder safely")
+    merge.add_argument("--base", required=True, help="Existing texture/reference folder")
+    merge.add_argument("--comparison", required=True, help="New Rainbow/comparison folder")
+    merge.add_argument("--output", required=True, help="New merged texture folder")
+    merge.add_argument("--reports", required=True, help="Folder for generated reports")
+    merge.add_argument("--config", help="Optional JSON configuration file")
     return parser
 
 
@@ -39,6 +46,20 @@ def run_compare(args: argparse.Namespace) -> int:
     return 2 if summary["ERROR"] else 0
 
 
+def run_merge(args: argparse.Namespace) -> int:
+    config = load_config(args.config)
+    report = compare_directories(args.base, args.comparison, config)
+    json_path, text_path = write_reports(report, args.reports)
+    result = create_merged_folder(report, args.output)
+    print(f"Updated folder: {result.output_folder}")
+    print(f"Added: {result.added_from_comparison}")
+    print(f"Updated: {result.updated_from_comparison}")
+    print(f"Preserved from base: {result.copied_from_base}")
+    print(f"JSON report: {json_path}")
+    print(f"Text report: {text_path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -47,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
 
         return gui_main()
     try:
-        return run_compare(args)
+        return run_merge(args) if args.command == "merge" else run_compare(args)
     except (OSError, ValueError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
