@@ -7,7 +7,7 @@ from contextlib import ExitStack
 from . import __version__
 from .comparator import compare_directories
 from .config import load_config
-from .merger import create_merged_folder
+from .merger import create_layered_package
 from .reporter import write_reports
 from .source_adapter import normalized_source
 
@@ -27,9 +27,11 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--output", required=True, help="Folder for generated reports")
     compare.add_argument("--config", help="Optional JSON configuration file")
     merge = subparsers.add_parser("merge", help="Create an updated folder safely")
-    merge.add_argument("--base", required=True, help="Existing texture/reference folder")
-    merge.add_argument("--comparison", required=True, help="New Rainbow/comparison folder")
-    merge.add_argument("--output", required=True, help="New merged texture folder")
+    merge.add_argument("--base", required=True, help="Existing texture folder")
+    merge.add_argument("--base-mappings", required=True, help="Existing working Geyser mappings")
+    merge.add_argument("--comparison", required=True, help="New Rainbow texture folder")
+    merge.add_argument("--comparison-mappings", required=True, help="New Rainbow mappings folder")
+    merge.add_argument("--output", required=True, help="New layered output folder")
     merge.add_argument("--reports", required=True, help="Folder for generated reports")
     merge.add_argument("--config", help="Optional JSON configuration file")
     return parser
@@ -59,15 +61,19 @@ def run_merge(args: argparse.Namespace) -> int:
         base = stack.enter_context(normalized_source(args.base))
         comparison = stack.enter_context(normalized_source(args.comparison))
         report = compare_directories(base, comparison, config)
-        result = create_merged_folder(report, args.output)
+        result = create_layered_package(
+            report, args.base_mappings, args.comparison_mappings, args.output
+        )
     report.base_folder = str(args.base)
     report.comparison_folder = str(args.comparison)
     json_path, text_path = write_reports(report, args.reports)
     print(f"Updated folder: {result.output_folder}")
-    print(f"Added: {result.added_from_comparison}")
-    print(f"Updated: {result.updated_from_comparison}")
-    print(f"Preserved from base: {result.copied_from_base}")
-    print(f"Merged mappings/registries: {result.merged_json_files}")
+    print(f"Textures added: {result.texture.added_from_comparison}")
+    print(f"Textures updated: {result.texture.updated_from_comparison}")
+    print(f"Textures preserved: {result.texture.copied_from_base}")
+    print(f"Mappings preserved: {result.preserved_mappings}")
+    print(f"Mappings added: {result.added_mappings}")
+    print(f"Mapping JSON files merged: {result.merged_mapping_files}")
     print(f"Mapping/texture warnings: {len(result.warnings)}")
     print(f"Rebuilt pack: {result.rebuilt_pack}")
     print(f"JSON report: {json_path}")
