@@ -131,18 +131,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "missing_title": "缺少信息", "missing_message": "请选择三个文件夹。", "analyzing": "正在分析文件夹...",
         "failed": "分析失败。", "completed": "分析成功完成。", "finished": "完成。原始文件夹未被修改。",
 
-
-# Golden Pot v0.4 layered interface labels
-_LAYERED = {
-    "pt": {"title":"Golden Pot v0.4.0 — Texturas e mappings em camadas","base_texture_folder":"Textura anterior","base_mappings_folder":"Mappings anteriores","comparison_texture_folder":"Nova textura do Rainbow","comparison_mappings_folder":"Novos mappings do Rainbow","preserved_mappings":"Mappings antigos preservados","added_mappings":"Novos mappings adicionados"},
-    "en": {"title":"Golden Pot v0.4.0 — Layered texture and mappings","base_texture_folder":"Previous texture","base_mappings_folder":"Previous mappings","comparison_texture_folder":"New Rainbow texture","comparison_mappings_folder":"New Rainbow mappings","preserved_mappings":"Previous mappings preserved","added_mappings":"New mappings added"},
-    "es": {"title":"Golden Pot v0.4.0 — Texturas y mappings por capas","base_texture_folder":"Textura anterior","base_mappings_folder":"Mappings anteriores","comparison_texture_folder":"Nueva textura de Rainbow","comparison_mappings_folder":"Nuevos mappings de Rainbow","preserved_mappings":"Mappings conservados","added_mappings":"Nuevos mappings añadidos"},
-    "zh": {"title":"Golden Pot v0.4.0 — 分层纹理与映射","base_texture_folder":"旧纹理","base_mappings_folder":"旧映射","comparison_texture_folder":"新的 Rainbow 纹理","comparison_mappings_folder":"新的 Rainbow 映射","preserved_mappings":"保留的旧映射","added_mappings":"新增映射"},
-    "ru": {"title":"Golden Pot v0.4.0 — Слои текстур и mappings","base_texture_folder":"Предыдущая текстура","base_mappings_folder":"Предыдущие mappings","comparison_texture_folder":"Новая текстура Rainbow","comparison_mappings_folder":"Новые mappings Rainbow","preserved_mappings":"Сохранённые mappings","added_mappings":"Добавленные mappings"},
-    "ja": {"title":"Golden Pot v0.4.0 — テクスチャとマッピングのレイヤー","base_texture_folder":"以前のテクスチャ","base_mappings_folder":"以前のマッピング","comparison_texture_folder":"新しいRainbowテクスチャ","comparison_mappings_folder":"新しいRainbowマッピング","preserved_mappings":"保持したマッピング","added_mappings":"追加したマッピング"},
-}
-for _language, _labels in _LAYERED.items():
-    TRANSLATIONS[_language].update(_labels)
         "json_report": "JSON 报告", "text_report": "文本报告", "ADDED": "新增", "UNCHANGED": "未更改",
         "MODIFIED": "已修改", "PRESERVED": "已保留", "PROTECTED": "受保护", "ERROR": "错误", "TOTAL": "总计",
     },
@@ -177,6 +165,18 @@ for _language, _labels in _LAYERED.items():
         "MODIFIED": "変更済み", "PRESERVED": "保持", "PROTECTED": "保護", "ERROR": "エラー", "TOTAL": "合計",
     },
 }
+
+# Golden Pot v0.4 layered interface labels
+_LAYERED = {
+    "pt": {"title":"Golden Pot v0.4.0 — Texturas e mappings em camadas","base_texture_folder":"Textura anterior","base_mappings_folder":"Mappings anteriores","comparison_texture_folder":"Nova textura do Rainbow","comparison_mappings_folder":"Novos mappings do Rainbow","preserved_mappings":"Mappings antigos preservados","added_mappings":"Novos mappings adicionados"},
+    "en": {"title":"Golden Pot v0.4.0 — Layered texture and mappings","base_texture_folder":"Previous texture","base_mappings_folder":"Previous mappings","comparison_texture_folder":"New Rainbow texture","comparison_mappings_folder":"New Rainbow mappings","preserved_mappings":"Previous mappings preserved","added_mappings":"New mappings added"},
+    "es": {"title":"Golden Pot v0.4.0 — Texturas y mappings por capas","base_texture_folder":"Textura anterior","base_mappings_folder":"Mappings anteriores","comparison_texture_folder":"Nueva textura de Rainbow","comparison_mappings_folder":"Nuevos mappings de Rainbow","preserved_mappings":"Mappings conservados","added_mappings":"Nuevos mappings añadidos"},
+    "zh": {"title":"Golden Pot v0.4.0 — 分层纹理与映射","base_texture_folder":"旧纹理","base_mappings_folder":"旧映射","comparison_texture_folder":"新的 Rainbow 纹理","comparison_mappings_folder":"新的 Rainbow 映射","preserved_mappings":"保留的旧映射","added_mappings":"新增映射"},
+    "ru": {"title":"Golden Pot v0.4.0 — Слои текстур и mappings","base_texture_folder":"Предыдущая текстура","base_mappings_folder":"Предыдущие mappings","comparison_texture_folder":"Новая текстура Rainbow","comparison_mappings_folder":"Новые mappings Rainbow","preserved_mappings":"Сохранённые mappings","added_mappings":"Добавленные mappings"},
+    "ja": {"title":"Golden Pot v0.4.0 — テクスチャとマッピングのレイヤー","base_texture_folder":"以前のテクスチャ","base_mappings_folder":"以前のマッピング","comparison_texture_folder":"新しいRainbowテクスチャ","comparison_mappings_folder":"新しいRainbowマッピング","preserved_mappings":"保持したマッピング","added_mappings":"追加したマッピング"},
+}
+for _language, _labels in _LAYERED.items():
+    TRANSLATIONS[_language].update(_labels)
 
 
 def detect_language() -> str:
