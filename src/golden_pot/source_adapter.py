@@ -46,8 +46,22 @@ def normalized_source(selected_folder: str | Path) -> Iterator[Path]:
     pack_zip = root / "pack.zip"
     pack_directories = sorted(
         path for path in root.iterdir()
-        if path.is_dir() and path.name.casefold().startswith("pack.")
+        if path.is_dir()
+        and (
+            path.name.casefold() == "pack"
+            or path.name.casefold().startswith("pack.")
+        )
     )
+    # Existing packs exported by Golden Pot may keep the resource pack in a
+    # named directory (for example EtherTexture Bedrock) and mappings next
+    # to it. Treat the single directory containing manifest.json as the pack
+    # root, regardless of its display name.
+    manifest_directories = sorted(
+        path for path in root.iterdir()
+        if path.is_dir() and (path / "manifest.json").is_file()
+    )
+    if not pack_directories and len(manifest_directories) == 1:
+        pack_directories = manifest_directories
     if not pack_zip.is_file() and len(pack_directories) != 1:
         yield selected
         return
