@@ -5,4 +5,4 @@ from .config import GoldenPotConfig, load_config
 from .merger import create_merged_folder
 
 __all__ = ["GoldenPotConfig", "compare_directories", "create_merged_folder", "load_config"]
-__version__ = "0.3.0"
+__version__ = "0.3.1"
