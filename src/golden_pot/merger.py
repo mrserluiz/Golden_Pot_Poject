@@ -159,9 +159,7 @@ def _merge_mapping_layers(previous: Path, current: Path, destination: Path) -> t
 
 def _write_layered_report(destination: Path, preserved: int, added: int, updated: int, merged: int, warnings: list[str]) -> None:
     lines = ["Golden Pot layered merge report", f"Mappings preserved from previous version: {preserved}", f"Mappings added from Rainbow: {added}", f"Non-JSON mappings updated from Rainbow: {updated}", f"JSON mapping files semantically merged: {merged}", f"Warnings: {len(warnings)}", "", *(warnings or ["No mapping or texture reference warnings."])]
-    destination.write_text("
-".join(lines) + "
-", encoding="utf-8")
+    destination.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 def _mapping_files(root: Path) -> list[Path]:
     return [p for p in root.rglob("*.json") if is_mapping_path(p.relative_to(root).as_posix())]
