@@ -26,11 +26,17 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     private final Map<String,ItemStack> gemTemplates=new HashMap<>();
     private final Map<String,Integer> bookCmd=new LinkedHashMap<>();
     private File menusDir,templatesFile;
+    private YamlConfiguration globalVisual;
+    private File visualRulesFile;
+    private final Map<String,String> cmdRegistry=new HashMap<>();
     private boolean visual, itemEnabled, logging;
     @Override public void onEnable(){
         saveDefaultConfig();
         menusDir=new File(getDataFolder(),"menus"); if(!menusDir.exists()&&!menusDir.mkdirs()) getLogger().warning("Unable to create menus directory");
         templatesFile=new File(getDataFolder(),"gem-templates.yml");
+        visualRulesFile=new File(getDataFolder(),"menu-defaults.yml");
+        initializeVisualRules();
+        loadRegistry();
         visual=getConfig().getBoolean("menu-manager.visual-enabled",false);
         logging=getConfig().getBoolean("menu-manager.log",false);
         itemEnabled=getConfig().getBoolean("item-manager.enabled",false);
@@ -55,6 +61,105 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         if(value.length()>60)value=value.substring(0,60);
         return value.isEmpty()?"menu":value;
     }
+
+    private void initializeVisualRules(){
+        if(!visualRulesFile.exists()){
+            YamlConfiguration defaults=new YamlConfiguration();
+            defaults.set("global.enabled",false);
+            defaults.set("global.glass-pane.enabled",false);
+            defaults.set("global.glass-pane.mode","FALLBACK");
+            defaults.set("global.glass-pane.custom-model-data",null);
+            defaults.set("global.glass-pane.materials",List.of("GRAY_STAINED_GLASS_PANE"));
+            try{defaults.save(visualRulesFile);}catch(IOException ex){getLogger().warning("Cannot create menu defaults: "+ex.getMessage());}
+        }
+        globalVisual=YamlConfiguration.loadConfiguration(visualRulesFile);
+    }
+    private void loadRegistry(){
+        cmdRegistry.clear();
+        File file=new File(getDataFolder(),"cmd-registry.yml");
+        if(!file.exists())saveResource("cmd-registry.yml",false);
+        YamlConfiguration registry=YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection section=registry.getConfigurationSection("entries");
+        if(section==null)return;
+        for(String id:section.getKeys(false))cmdRegistry.put(id,section.getString(id,"UNKNOWN"));
+    }
+    private boolean validateCmd(CommandSender sender,int cmd,String context,Material material){
+        if(cmd<2300){sender.sendMessage("§cCMD below 2300 is restricted.");return false;}
+        String owner=cmdRegistry.get(String.valueOf(cmd));
+        if(owner!=null&&!owner.equals(context)){
+            sender.sendMessage("§cCMD "+cmd+" is reserved: "+owner);
+            sender.sendMessage("§7If this is intentional reuse of that model, use /gps menus cmd set ... reuse");
+            return false;
+        }
+        return true;
+    }
+    private boolean setMenuRule(CommandSender sender,String menu,int from,int to,int cmd,boolean reuse){
+        YamlConfiguration yaml=menus.get(menu);
+        if(yaml==null){sender.sendMessage("§cMenu not registered: "+menu);return true;}
+        int size=yaml.getInt("recognition.size");
+        if(from<0||to<from||to>=size){sender.sendMessage("§cSlot range must be 0.."+(size-1));return true;}
+        if(!reuse&&!validateCmd(sender,cmd,"GPS_MENU",Material.GRAY_STAINED_GLASS_PANE))return true;
+        for(int i=from;i<=to;i++){
+            String material=yaml.getString("snapshot.slots."+i+".material","AIR");
+            if(!material.endsWith("STAINED_GLASS_PANE")){sender.sendMessage("§cSlot "+i+" is "+material+" (not a glass pane). No changes saved.");return true;}
+        }
+        for(int i=from;i<=to;i++){
+            String base="visual.slots."+i;
+            yaml.set(base+".custom-model-data",cmd);
+            yaml.set(base+".mode","FALLBACK");
+        }
+        yaml.set("visual.enabled",true);
+        try{
+            yaml.save(new File(menusDir,menu+".yml"));
+            sender.sendMessage("§aSaved CMD "+cmd+" for slots "+from+".."+to+" in "+menu);
+        }catch(IOException ex){sender.sendMessage("§cFailed to save menu: "+ex.getMessage());}
+        return true;
+    }
+    private boolean cmdCommand(CommandSender sender,String[] args){
+        if(args.length<3){sender.sendMessage("§e/gps menus cmd set <slot> [at <end>] <cmd> [reuse] (next-open menu selected by /gps menus select <id>)");return true;}
+        if(args[2].equalsIgnoreCase("registry")){
+            sender.sendMessage("§eKnown reserved CMDs: "+cmdRegistry.size()+"; /gps menus cmd check <id>");
+            return true;
+        }
+        if(args[2].equalsIgnoreCase("check")&&args.length>=4){
+            try{int id=Integer.parseInt(args[3]);sender.sendMessage("§eCMD "+id+": "+cmdRegistry.getOrDefault(String.valueOf(id),"not registered"));}catch(NumberFormatException ex){sender.sendMessage("§cInvalid number.");}
+            return true;
+        }
+        if(args[2].equalsIgnoreCase("global")&&args.length>=4){
+            if(args[3].equalsIgnoreCase("off")){
+                globalVisual.set("global.glass-pane.enabled",false);
+                try{globalVisual.save(visualRulesFile);sender.sendMessage("§eGlobal glass CMD disabled.");}catch(IOException ex){sender.sendMessage("§cSave failed.");}
+                return true;
+            }
+            if(args[3].equalsIgnoreCase("set")&&args.length>=5){
+                try{
+                    int value=Integer.parseInt(args[4]);boolean reuse=args.length>=6&&args[5].equalsIgnoreCase("reuse");
+                    if(!reuse&&!validateCmd(sender,value,"GPS_MENU",Material.GRAY_STAINED_GLASS_PANE))return true;
+                    globalVisual.set("global.enabled",true);
+                    globalVisual.set("global.glass-pane.enabled",true);
+                    globalVisual.set("global.glass-pane.custom-model-data",value);
+                    globalVisual.set("global.glass-pane.mode","FALLBACK");
+                    globalVisual.save(visualRulesFile);
+                    sender.sendMessage("§aGlobal glass pane CMD: "+value+" (FALLBACK).");
+                }catch(Exception ex){sender.sendMessage("§cCMD must be numeric, or save failed: "+ex.getMessage());}
+                return true;
+            }
+        }
+        if(!args[2].equalsIgnoreCase("set"))return true;
+        if(!(sender instanceof Player p)){sender.sendMessage("§cUse this command in-game.");return true;}
+        String menu=idFor(p.getOpenInventory());
+        if(menu==null){sender.sendMessage("§cOpen a registered menu to edit CMDs, or use /gps menus select <id>.");return true;}
+        int from,to,cmd;boolean reuse=false;
+        try{
+            if(args.length>=7&&args[4].equalsIgnoreCase("at")){
+                from=Integer.parseInt(args[3]);to=Integer.parseInt(args[5]);cmd=Integer.parseInt(args[6]);reuse=args.length>=8&&args[7].equalsIgnoreCase("reuse");
+            }else{
+                from=Integer.parseInt(args[3]);to=from;cmd=Integer.parseInt(args[4]);reuse=args.length>=6&&args[5].equalsIgnoreCase("reuse");
+            }
+        }catch(Exception ex){sender.sendMessage("§cSyntax: /gps menus cmd set 0 at 8 2340 [reuse]");return true;}
+        return setMenuRule(sender,menu,from,to,cmd,reuse);
+    }
+
     private void loadMenus(){
         menus.clear();File[] files=menusDir.listFiles((d,n)->n.endsWith(".yml"));if(files==null)return;
         for(File file:files){YamlConfiguration yaml=YamlConfiguration.loadConfiguration(file);if(yaml.getString("recognition.title")==null||yaml.getInt("recognition.size")<=0){getLogger().warning("Invalid menu: "+file.getName());continue;}menus.put(file.getName().substring(0,file.getName().length()-4),yaml);}
@@ -68,7 +173,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
             else{String base=id;int suffix=2;while(menus.containsKey(id)||new File(menusDir,id+".yml").exists())id=base+"_"+suffix++;}
         }
         File file=new File(menusDir,id+".yml");YamlConfiguration yaml=new YamlConfiguration();
-        if(file.exists()){YamlConfiguration previous=YamlConfiguration.loadConfiguration(file);ConfigurationSection old=previous.getConfigurationSection("visual.slots");if(old!=null)for(String slot:old.getKeys(false)){int cmd=old.getInt(slot+".custom-model-data",-1);if(cmd>=0)yaml.set("visual.slots."+slot+".custom-model-data",cmd);}}
+        if(file.exists()){YamlConfiguration previous=YamlConfiguration.loadConfiguration(file);ConfigurationSection old=previous.getConfigurationSection("visual.slots");if(old!=null)for(String slot:old.getKeys(false)){yaml.set("visual.slots."+slot,old.getValues(true));}}
         yaml.set("meta.schema",1);yaml.set("meta.id",id);yaml.set("meta.source","GoldenPotScan 0.0.1");
         yaml.set("recognition.title",title);yaml.set("recognition.size",inv.getSize());yaml.set("visual.enabled",file.exists()&&YamlConfiguration.loadConfiguration(file).getBoolean("visual.enabled",false));
         for(int i=0;i<inv.getSize();i++){
@@ -94,18 +199,35 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     @EventHandler(priority=EventPriority.MONITOR) public void onClick(InventoryClickEvent e){if(visual&&e.getWhoClicked() instanceof Player p)Bukkit.getScheduler().runTaskLater(this,()->{if(p.isOnline())applyVisual(p);},2);}
     @EventHandler(priority=EventPriority.MONITOR) public void onDrag(InventoryDragEvent e){if(visual&&e.getWhoClicked() instanceof Player p)Bukkit.getScheduler().runTaskLater(this,()->{if(p.isOnline())applyVisual(p);},2);}
     private void applyVisual(Player p){
-        if(!visual)return;InventoryView view=p.getOpenInventory();String id=idFor(view);if(id==null)return;
-        YamlConfiguration yaml=menus.get(id);if(!yaml.getBoolean("visual.enabled",false))return;
-        ConfigurationSection slots=yaml.getConfigurationSection("visual.slots");if(slots==null)return;
-        Inventory inv=view.getTopInventory();for(String s:slots.getKeys(false)){
-            int index;try{index=Integer.parseInt(s);}catch(NumberFormatException x){continue;}
-            if(index<0||index>=inv.getSize())continue;
-            ItemStack original=inv.getItem(index);if(original==null||original.getType()!=Material.GRAY_STAINED_GLASS_PANE)continue;
-            int cmd=slots.getInt(s+".custom-model-data",-1);if(cmd<0)continue;
+        if(!visual)return;
+        InventoryView view=p.getOpenInventory();String id=idFor(view);
+        if(id==null)return;
+        YamlConfiguration yaml=menus.get(id);if(yaml==null)return;
+        Inventory inv=view.getTopInventory();
+        boolean menuActive=yaml.getBoolean("visual.enabled",false);
+        boolean globalActive=globalVisual.getBoolean("global.enabled",false)&&globalVisual.getBoolean("global.glass-pane.enabled",false);
+        if(!menuActive&&!globalActive)return;
+        for(int index=0;index<inv.getSize();index++){
+            ItemStack original=inv.getItem(index);
+            if(original==null||original.getType().isAir())continue;
+            String slot="visual.slots."+index;
+            boolean local=yaml.isSet(slot+".custom-model-data");
+            int cmd=-1;String mode="FALLBACK";
+            if(local&&menuActive){
+                cmd=yaml.getInt(slot+".custom-model-data",-1);
+                mode=yaml.getString(slot+".mode",yaml.getString("visual.default-mode","FALLBACK"));
+            }else if(globalActive&&globalVisual.getStringList("global.glass-pane.materials").contains(original.getType().name())){
+                cmd=globalVisual.getInt("global.glass-pane.custom-model-data",-1);
+                mode=globalVisual.getString("global.glass-pane.mode","FALLBACK");
+            }
+            if(cmd<0||mode.equalsIgnoreCase("PRESERVE"))continue;
+            String expected=yaml.getString("snapshot.slots."+index+".material","AIR");
+            if(!original.getType().name().equals(expected)||!original.getType().name().endsWith("STAINED_GLASS_PANE"))continue;
             ItemMeta meta=original.getItemMeta();if(meta==null)continue;
+            if(mode.equalsIgnoreCase("FALLBACK")&&meta.hasCustomModelData())continue;
             if(meta.hasCustomModelData()&&meta.getCustomModelData()==cmd)continue;
-            ItemStack cloned=original.clone();ItemMeta cloneMeta=cloned.getItemMeta();if(cloneMeta==null)continue;
-            cloneMeta.setCustomModelData(cmd);cloned.setItemMeta(cloneMeta);inv.setItem(index,cloned);
+            ItemStack clone=original.clone();ItemMeta cm=clone.getItemMeta();if(cm==null)continue;
+            cm.setCustomModelData(cmd);clone.setItemMeta(cm);inv.setItem(index,clone);
         }
     }
     private void initBookRules(){
@@ -181,8 +303,9 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     }
     @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args){
         if(args.length==0||args[0].equalsIgnoreCase("help")){sender.sendMessage("§6GoldenPotScan §f/gps menus scan auto|<id>|cancel; /gps menus list|reload|mode on|off|log on|off; /gps items status|mode on|off|template <gem>; /gps reload");return true;}
-        if(args[0].equalsIgnoreCase("reload")){reloadConfig();loadMenus();loadTemplates();visual=getConfig().getBoolean("menu-manager.visual-enabled",false);itemEnabled=getConfig().getBoolean("item-manager.enabled",false);logging=getConfig().getBoolean("menu-manager.log",false);sender.sendMessage("§aGoldenPotScan reloaded.");return true;}
+        if(args[0].equalsIgnoreCase("reload")){reloadConfig();initializeVisualRules();loadRegistry();loadMenus();loadTemplates();visual=getConfig().getBoolean("menu-manager.visual-enabled",false);itemEnabled=getConfig().getBoolean("item-manager.enabled",false);logging=getConfig().getBoolean("menu-manager.log",false);sender.sendMessage("§aGoldenPotScan reloaded.");return true;}
         if(args[0].equalsIgnoreCase("menus")){
+            if(args.length>=2&&args[1].equalsIgnoreCase("cmd"))return cmdCommand(sender,args);
             if(args.length>=2&&args[1].equalsIgnoreCase("list")){sender.sendMessage("§eMenus: "+String.join(", ",menus.keySet()));return true;}
             if(args.length>=2&&args[1].equalsIgnoreCase("reload")){loadMenus();sender.sendMessage("§aYAML menu cache reloaded: "+menus.size());return true;}
             if(args.length>=3&&args[1].equalsIgnoreCase("mode")){visual=args[2].equalsIgnoreCase("on");getConfig().set("menu-manager.visual-enabled",visual);saveConfig();sender.sendMessage("§eVisual mode: "+visual);return true;}
@@ -202,7 +325,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     }
     @Override public List<String> onTabComplete(CommandSender sender,Command cmd,String alias,String[] args){
         if(args.length==1)return Arrays.asList("help","menus","items","reload");
-        if(args.length==2&&args[0].equalsIgnoreCase("menus"))return Arrays.asList("scan","list","reload","mode","log");
+        if(args.length==2&&args[0].equalsIgnoreCase("menus"))return Arrays.asList("scan","list","reload","mode","log","cmd");
         if(args.length==2&&args[0].equalsIgnoreCase("items"))return Arrays.asList("status","mode","template");
         if(args.length==3&&args[1].equalsIgnoreCase("scan"))return Arrays.asList("auto","cancel");
         if(args.length==3&&args[1].equalsIgnoreCase("template"))return Arrays.asList("ruby","sapphire","emerald","topaz");
