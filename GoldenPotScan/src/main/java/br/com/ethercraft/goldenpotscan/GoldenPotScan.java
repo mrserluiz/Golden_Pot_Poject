@@ -32,6 +32,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     private final Map<String,String> cmdRegistry=new HashMap<>();
     private boolean visual, itemEnabled, logging;
     @Override public void onEnable(){
+        pending.clear();selectedMenus.clear();menus.clear();gemTemplates.clear();bookCmd.clear();cmdRegistry.clear();
         saveDefaultConfig();
         menusDir=new File(getDataFolder(),"menus"); if(!menusDir.exists()&&!menusDir.mkdirs()) getLogger().warning("Unable to create menus directory");
         templatesFile=new File(getDataFolder(),"gem-templates.yml");
@@ -48,6 +49,12 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         long interval=Math.max(20,getConfig().getLong("item-manager.scan-period-ticks",40));
         Bukkit.getScheduler().runTaskTimer(this,this::scanAll,interval,interval);
         getLogger().info("GoldenPotScan v0.0.3 enabled: menus="+menus.size()+", item scan="+itemEnabled+", visual="+visual);
+    }
+    @Override public void onDisable(){
+        Bukkit.getScheduler().cancelTasks(this);
+        org.bukkit.event.HandlerList.unregisterAll(this);
+        pending.clear();selectedMenus.clear();menus.clear();gemTemplates.clear();bookCmd.clear();cmdRegistry.clear();
+        getLogger().info("GoldenPotScan disabled: tasks, listeners and runtime caches cleared.");
     }
     private void log(String value){if(logging)getLogger().info(value);}
     private String plain(String legacy){return org.bukkit.ChatColor.stripColor(legacy==null?"":legacy);}
