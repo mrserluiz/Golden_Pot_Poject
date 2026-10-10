@@ -1,0 +1,12 @@
+menu-manager:
+  enabled: true
+  visual-enabled: false
+  log: false
+  capture-delay-ticks: 2
+item-manager:
+  enabled: false
+  scan-period-ticks: 40
+  enchanted-books: true
+  breweryx: true
+  theosis-legacy-gems: true
+  golden-anvil: false
