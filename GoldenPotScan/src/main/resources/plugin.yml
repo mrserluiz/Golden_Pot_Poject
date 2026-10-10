@@ -1,0 +1,13 @@
+name: GoldenPotScan
+version: '0.0.3'
+main: br.com.ethercraft.goldenpotscan.GoldenPotScan
+api-version: '1.21'
+author: EtherCraft
+softdepend: [Theosis, BreweryX, Geyser-Spigot]
+commands:
+  goldenpotscan:
+    aliases: [gps]
+    permission: goldenpotscan.admin
+permissions:
+  goldenpotscan.admin:
+    default: op
