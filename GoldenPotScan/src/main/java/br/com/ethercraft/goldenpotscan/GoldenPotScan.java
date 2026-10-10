@@ -22,6 +22,7 @@ import java.util.*;
 
 public final class GoldenPotScan extends JavaPlugin implements Listener, CommandExecutor, TabCompleter {
     private final Map<UUID,String> pending=new HashMap<>();
+    private final Map<UUID,String> selectedMenus=new HashMap<>();
     private final Map<String,YamlConfiguration> menus=new HashMap<>();
     private final Map<String,ItemStack> gemTemplates=new HashMap<>();
     private final Map<String,Integer> bookCmd=new LinkedHashMap<>();
@@ -116,7 +117,15 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         return true;
     }
     private boolean cmdCommand(CommandSender sender,String[] args){
-        if(args.length<3){sender.sendMessage("§e/gps menus cmd set <slot> [at <end>] <cmd> [reuse] (next-open menu selected by /gps menus select <id>)");return true;}
+        if(args.length<3){sender.sendMessage("§e/gps menus cmd set <slot> [at <end>] <cmd> [reuse]; /gps menus cmd select <menu-id>");return true;}
+        if(args[2].equalsIgnoreCase("select")&&args.length>=4){
+            String id=args[3];
+            if(!menus.containsKey(id)){sender.sendMessage("§cMenu not found: "+id);return true;}
+            if(!(sender instanceof Player player)){sender.sendMessage("§cUse in-game.");return true;}
+            selectedMenus.put(player.getUniqueId(),id);
+            sender.sendMessage("§aSelected menu for CMD editing: "+id);
+            return true;
+        }
         if(args[2].equalsIgnoreCase("registry")){
             sender.sendMessage("§eKnown reserved CMDs: "+cmdRegistry.size()+"; /gps menus cmd check <id>");
             return true;
@@ -148,7 +157,8 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         if(!args[2].equalsIgnoreCase("set"))return true;
         if(!(sender instanceof Player p)){sender.sendMessage("§cUse this command in-game.");return true;}
         String menu=idFor(p.getOpenInventory());
-        if(menu==null){sender.sendMessage("§cOpen a registered menu to edit CMDs, or use /gps menus select <id>.");return true;}
+        if(menu==null)menu=selectedMenus.get(p.getUniqueId());
+        if(menu==null){sender.sendMessage("§cUse /gps menus cmd select <id> before editing while menu is closed.");return true;}
         int from,to,cmd;boolean reuse=false;
         try{
             if(args.length>=7&&args[4].equalsIgnoreCase("at")){
@@ -328,6 +338,8 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         if(args.length==2&&args[0].equalsIgnoreCase("menus"))return Arrays.asList("scan","list","reload","mode","log","cmd");
         if(args.length==2&&args[0].equalsIgnoreCase("items"))return Arrays.asList("status","mode","template");
         if(args.length==3&&args[1].equalsIgnoreCase("scan"))return Arrays.asList("auto","cancel");
+        if(args.length==3&&args[1].equalsIgnoreCase("cmd"))return Arrays.asList("set","select","global","check","registry");
+        if(args.length==4&&args[1].equalsIgnoreCase("cmd")&&args[2].equalsIgnoreCase("select"))return new ArrayList<>(menus.keySet());
         if(args.length==3&&args[1].equalsIgnoreCase("template"))return Arrays.asList("ruby","sapphire","emerald","topaz");
         if(args.length==3&&Arrays.asList("mode","log").contains(args[1].toLowerCase(Locale.ROOT)))return Arrays.asList("on","off");return Collections.emptyList();
     }
