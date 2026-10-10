@@ -47,7 +47,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         Bukkit.getPluginManager().registerEvents(this,this);
         long interval=Math.max(20,getConfig().getLong("item-manager.scan-period-ticks",40));
         Bukkit.getScheduler().runTaskTimer(this,this::scanAll,interval,interval);
-        getLogger().info("GoldenPotScan v0.0.1 enabled: menus="+menus.size()+", item scan="+itemEnabled+", visual="+visual);
+        getLogger().info("GoldenPotScan v0.0.3 enabled: menus="+menus.size()+", item scan="+itemEnabled+", visual="+visual);
     }
     private void log(String value){if(logging)getLogger().info(value);}
     private String plain(String legacy){return org.bukkit.ChatColor.stripColor(legacy==null?"":legacy);}
@@ -88,21 +88,37 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         if(cmd<2300){sender.sendMessage("§cCMD below 2300 is restricted.");return false;}
         String owner=cmdRegistry.get(String.valueOf(cmd));
         if(owner!=null&&!owner.equals(context)){
-            sender.sendMessage("§cCMD "+cmd+" is reserved: "+owner);
-            sender.sendMessage("§7If this is intentional reuse of that model, use /gps menus cmd set ... reuse");
-            return false;
+            sender.sendMessage("§e[GoldenPotScan] Warning: CMD "+cmd+" is registered as "+owner+". Reuse is allowed.");
         }
         return true;
+    }
+    private void warnCmdReuse(CommandSender sender,String menu,int from,int to,int cmd){
+        int matches=0;String example=null;
+        for(var entry:menus.entrySet()){
+            ConfigurationSection slots=entry.getValue().getConfigurationSection("visual.slots");
+            if(slots==null)continue;
+            for(String key:slots.getKeys(false)){
+                int slot;
+                try{slot=Integer.parseInt(key);}catch(NumberFormatException ex){continue;}
+                if(entry.getKey().equals(menu)&&slot>=from&&slot<=to)continue;
+                if(slots.getInt(key+".custom-model-data",-1)==cmd){
+                    matches++;
+                    if(example==null)example=entry.getKey()+" slot "+slot;
+                }
+            }
+        }
+        if(matches>0)sender.sendMessage("§e[GoldenPotScan] Aviso: CMD "+cmd+" ja usado em "+matches+" slot(s), ex.: "+example+". Reutilizacao permitida.");
     }
     private boolean setMenuRule(CommandSender sender,String menu,int from,int to,int cmd,boolean reuse){
         YamlConfiguration yaml=menus.get(menu);
         if(yaml==null){sender.sendMessage("§cMenu not registered: "+menu);return true;}
         int size=yaml.getInt("recognition.size");
         if(from<0||to<from||to>=size){sender.sendMessage("§cSlot range must be 0.."+(size-1));return true;}
-        if(!reuse&&!validateCmd(sender,cmd,"GPS_MENU",Material.GRAY_STAINED_GLASS_PANE))return true;
+        if(!validateCmd(sender,cmd,"GPS_MENU",Material.GRAY_STAINED_GLASS_PANE))return true;
+        warnCmdReuse(sender,menu,from,to,cmd);
         for(int i=from;i<=to;i++){
             String material=yaml.getString("snapshot.slots."+i+".material","AIR");
-            if(!material.endsWith("STAINED_GLASS_PANE")){sender.sendMessage("§cSlot "+i+" is "+material+" (not a glass pane). No changes saved.");return true;}
+            if(material.equals("AIR")){sender.sendMessage("§cSlot "+i+" is AIR. No changes saved; capture a populated menu first.");return true;}
         }
         for(int i=from;i<=to;i++){
             String base="visual.slots."+i;
@@ -143,7 +159,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
             if(args[3].equalsIgnoreCase("set")&&args.length>=5){
                 try{
                     int value=Integer.parseInt(args[4]);boolean reuse=args.length>=6&&args[5].equalsIgnoreCase("reuse");
-                    if(!reuse&&!validateCmd(sender,value,"GPS_MENU",Material.GRAY_STAINED_GLASS_PANE))return true;
+                    if(!validateCmd(sender,value,"GPS_MENU",Material.GRAY_STAINED_GLASS_PANE))return true;
                     globalVisual.set("global.enabled",true);
                     globalVisual.set("global.glass-pane.enabled",true);
                     globalVisual.set("global.glass-pane.custom-model-data",value);
@@ -184,7 +200,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         }
         File file=new File(menusDir,id+".yml");YamlConfiguration yaml=new YamlConfiguration();
         if(file.exists()){YamlConfiguration previous=YamlConfiguration.loadConfiguration(file);ConfigurationSection old=previous.getConfigurationSection("visual.slots");if(old!=null)for(String slot:old.getKeys(false)){yaml.set("visual.slots."+slot,old.getValues(true));}}
-        yaml.set("meta.schema",1);yaml.set("meta.id",id);yaml.set("meta.source","GoldenPotScan 0.0.1");
+        yaml.set("meta.schema",1);yaml.set("meta.id",id);yaml.set("meta.source","GoldenPotScan 0.0.3");
         yaml.set("recognition.title",title);yaml.set("recognition.size",inv.getSize());yaml.set("visual.enabled",file.exists()&&YamlConfiguration.loadConfiguration(file).getBoolean("visual.enabled",false));
         for(int i=0;i<inv.getSize();i++){
             ItemStack item=inv.getItem(i);String base="snapshot.slots."+i;
@@ -232,7 +248,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
             }
             if(cmd<0||mode.equalsIgnoreCase("PRESERVE"))continue;
             String expected=yaml.getString("snapshot.slots."+index+".material","AIR");
-            if(!original.getType().name().equals(expected)||!original.getType().name().endsWith("STAINED_GLASS_PANE"))continue;
+            if(!original.getType().name().equals(expected))continue;
             ItemMeta meta=original.getItemMeta();if(meta==null)continue;
             if(mode.equalsIgnoreCase("FALLBACK")&&meta.hasCustomModelData())continue;
             if(meta.hasCustomModelData()&&meta.getCustomModelData()==cmd)continue;
