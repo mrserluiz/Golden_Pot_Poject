@@ -62,6 +62,7 @@ final class MenuImageBuilder {
                         int i=indices.get(j);
                         if (j>0)json.append(',');
                         json.append("{\"threshold\":").append(firstCmd+i).append(",\"model\":{\"type\":\"minecraft:model\",\"model\":\"goldenpotscan:item/").append(name).append('_').append(i).append("\"}}");
+                        json.append(",{\"threshold\":").append(firstCmd+i+1).append(",\"model\":{\"type\":\"minecraft:model\",\"model\":\"minecraft:item/").append(material).append("\"}}");
                     }
                     // Ensure CMD values outside this image's range fall back to the vanilla item.
                     json.append(",{\"threshold\":").append(firstCmd+rows*9).append(",\"model\":{\"type\":\"minecraft:model\",\"model\":\"minecraft:item/").append(material).append("\"}}]}}");
