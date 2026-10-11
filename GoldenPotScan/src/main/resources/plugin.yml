@@ -1,5 +1,5 @@
 name: GoldenPotScan
-version: '0.0.3'
+version: '0.4.0'
 main: br.com.ethercraft.goldenpotscan.GoldenPotScan
 api-version: '1.21'
 author: EtherCraft
