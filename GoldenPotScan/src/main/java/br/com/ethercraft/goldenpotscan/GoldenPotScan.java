@@ -52,7 +52,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     }
     @Override public void onDisable(){
         Bukkit.getScheduler().cancelTasks(this);
-        org.bukkit.event.HandlerList.unregisterAll(this);
+        org.bukkit.event.HandlerList.unregisterAll((org.bukkit.plugin.Plugin) this);
         pending.clear();selectedMenus.clear();menus.clear();gemTemplates.clear();bookCmd.clear();cmdRegistry.clear();
         getLogger().info("GoldenPotScan disabled: tasks, listeners and runtime caches cleared.");
     }
