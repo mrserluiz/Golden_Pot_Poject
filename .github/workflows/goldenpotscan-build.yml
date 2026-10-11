@@ -19,5 +19,5 @@ jobs:
         run: mvn -B -ntp clean package
       - uses: actions/upload-artifact@v4
         with:
-          name: GoldenPotScan-v0.0.3-jar
+          name: GoldenPotScan-v0.4.0-jar
           path: GoldenPotScan/target/*.jar
