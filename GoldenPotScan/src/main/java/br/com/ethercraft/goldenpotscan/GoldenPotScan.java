@@ -48,7 +48,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         Bukkit.getPluginManager().registerEvents(this,this);
         long interval=Math.max(20,getConfig().getLong("item-manager.scan-period-ticks",40));
         Bukkit.getScheduler().runTaskTimer(this,this::scanAll,interval,interval);
-        getLogger().info("GoldenPotScan v0.0.3 enabled: menus="+menus.size()+", item scan="+itemEnabled+", visual="+visual);
+        getLogger().info("GoldenPotScan v0.4.0 enabled: menus="+menus.size()+", item scan="+itemEnabled+", visual="+visual);
     }
     @Override public void onDisable(){
         Bukkit.getScheduler().cancelTasks(this);
@@ -207,7 +207,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         }
         File file=new File(menusDir,id+".yml");YamlConfiguration yaml=new YamlConfiguration();
         if(file.exists()){YamlConfiguration previous=YamlConfiguration.loadConfiguration(file);ConfigurationSection old=previous.getConfigurationSection("visual.slots");if(old!=null)for(String slot:old.getKeys(false)){yaml.set("visual.slots."+slot,old.getValues(true));}}
-        yaml.set("meta.schema",1);yaml.set("meta.id",id);yaml.set("meta.source","GoldenPotScan 0.0.3");
+        yaml.set("meta.schema",1);yaml.set("meta.id",id);yaml.set("meta.source","GoldenPotScan 0.4.0");
         yaml.set("recognition.title",title);yaml.set("recognition.size",inv.getSize());yaml.set("visual.enabled",file.exists()&&YamlConfiguration.loadConfiguration(file).getBoolean("visual.enabled",false));
         for(int i=0;i<inv.getSize();i++){
             ItemStack item=inv.getItem(i);String base="snapshot.slots."+i;
@@ -338,6 +338,28 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
         if(args.length==0||args[0].equalsIgnoreCase("help")){sender.sendMessage("§6GoldenPotScan §f/gps menus scan auto|<id>|cancel; /gps menus list|reload|mode on|off|log on|off; /gps items status|mode on|off|template <gem>; /gps reload");return true;}
         if(args[0].equalsIgnoreCase("reload")){reloadConfig();initializeVisualRules();loadRegistry();loadMenus();loadTemplates();visual=getConfig().getBoolean("menu-manager.visual-enabled",false);itemEnabled=getConfig().getBoolean("item-manager.enabled",false);logging=getConfig().getBoolean("menu-manager.log",false);sender.sendMessage("§aGoldenPotScan reloaded.");return true;}
         if(args[0].equalsIgnoreCase("menus")){
+            if(args.length>=2&&args[1].equalsIgnoreCase("image")){
+                if(args.length==7&&args[2].equalsIgnoreCase("build")){
+                    try {
+                        String menu=safeId(args[3]);
+                        if(!menus.containsKey(menu)){sender.sendMessage("§cMenu not registered: "+menu);return true;}
+                        MenuImageBuilder.build(this,sender,new File(menusDir,menu+".yml"),safeId(args[4]),Integer.parseInt(args[5]),1,Integer.parseInt(args[6]));
+                        loadMenus();
+                    }catch(NumberFormatException ex){sender.sendMessage("§cInvalid slot or CMD.");}
+                    return true;
+                }
+                if(args.length==8&&args[2].equalsIgnoreCase("build")){
+                    try {
+                        String menu=safeId(args[3]);
+                        if(!menus.containsKey(menu)){sender.sendMessage("§cMenu not registered: "+menu);return true;}
+                        MenuImageBuilder.build(this,sender,new File(menusDir,menu+".yml"),safeId(args[4]),Integer.parseInt(args[5]),Integer.parseInt(args[6]),Integer.parseInt(args[7]));
+                        loadMenus();
+                    }catch(NumberFormatException ex){sender.sendMessage("§cInvalid slot, rows or CMD.");}
+                    return true;
+                }
+                sender.sendMessage("§e/gps menus image build <menu> <image> <first-slot> <rows> <first-cmd>");
+                return true;
+            }
             if(args.length>=2&&args[1].equalsIgnoreCase("cmd"))return cmdCommand(sender,args);
             if(args.length>=2&&args[1].equalsIgnoreCase("list")){sender.sendMessage("§eMenus: "+String.join(", ",menus.keySet()));return true;}
             if(args.length>=2&&args[1].equalsIgnoreCase("reload")){loadMenus();sender.sendMessage("§aYAML menu cache reloaded: "+menus.size());return true;}
@@ -358,7 +380,7 @@ public final class GoldenPotScan extends JavaPlugin implements Listener, Command
     }
     @Override public List<String> onTabComplete(CommandSender sender,Command cmd,String alias,String[] args){
         if(args.length==1)return Arrays.asList("help","menus","items","reload");
-        if(args.length==2&&args[0].equalsIgnoreCase("menus"))return Arrays.asList("scan","list","reload","mode","log","cmd");
+        if(args.length==2&&args[0].equalsIgnoreCase("menus"))return Arrays.asList("scan","list","reload","mode","log","cmd","image");
         if(args.length==2&&args[0].equalsIgnoreCase("items"))return Arrays.asList("status","mode","template");
         if(args.length==3&&args[1].equalsIgnoreCase("scan"))return Arrays.asList("auto","cancel");
         if(args.length==3&&args[1].equalsIgnoreCase("cmd"))return Arrays.asList("set","select","global","check","registry");
