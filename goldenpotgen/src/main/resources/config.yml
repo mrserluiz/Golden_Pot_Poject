@@ -1,0 +1,7 @@
+# Preview: enable on a test server without overlapping block managers.
+# Carrier: note_block[instrument=flute,note=24,powered=false]
+experimental-blocks: true
+java-pack:
+  # Host the generated Java ZIP and paste its public URL here.
+  url: ''
+  send-on-join: false

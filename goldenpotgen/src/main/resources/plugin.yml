@@ -1,0 +1,13 @@
+name: GoldenPotGen
+version: 0.2.0-preview
+main: br.com.ethercraft.goldenpot.GoldenPotGen
+api-version: '1.21.11'
+author: EtherCraft
+softdepend: [Geyser-Spigot, floodgate, CraftEngine, Oraxen, Nexo]
+commands:
+  gpg:
+    description: GoldenPotGen unified content engine
+    permission: goldenpotgen.admin
+permissions:
+  goldenpotgen.admin:
+    default: op

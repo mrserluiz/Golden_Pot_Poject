@@ -1,0 +1,93 @@
+GoldenPotGen 0.2.0-preview — EtherCraft
+
+UM PLUGIN, DOIS PACKS
+Plugin independente de CraftEngine, Oraxen, MeowFurniture e RecipeCrafter.
+Geyser-Spigot e Floodgate continuam externos. Não estão incluídos no JAR.
+Esta build inicial não migra nem substitui todo o conteúdo dos outros gerenciadores.
+
+Requisitos de compilação utilizados:
+- Paper API 1.21.11-R0.1, build 91 (biblioteca oficial)
+- Geyser-Spigot 2.11.3-SNAPSHOT enviado pelo usuário (API v2)
+- O servidor deve usar a versão Java exigida pelo próprio Paper (21 ou superior).
+Não há promessa de compatibilidade com Geyser antigo, Folia ou outras versões Paper.
+
+INSTALAÇÃO EM SERVIDOR DE TESTE
+1. Colocar somente GoldenPotGen-0.2.0-preview.jar em plugins/.
+2. Usar Geyser-Spigot 2.11.3-SNAPSHOT, com custom content habilitado.
+3. Reiniciar completamente. Não usar PlugMan ou reload para registros Geyser.
+4. Executar /gpg status. Aguardar o servidor terminar de iniciar.
+5. Executar /gpg give para receber um Minério de Ambrósio.
+
+A presença de CraftEngine, Oraxen ou Nexo desativa o bloco experimental para
+não disputar o mesmo conjunto de estados. Packs originais continuam preservados.
+Não remova esses plugins de um mundo existente para testar esta build; ela não
+importa os blocos antigos. Use outro servidor/mundo de teste sem esses plugins.
+
+PACKS GERADOS NA INICIALIZAÇÃO
+plugins/GoldenPotGen/generated/EtherTexture-Java-GoldenPotGen.zip
+plugins/GoldenPotGen/generated/EtherTexture-Bedrock-GoldenPotGen.mcpack
+
+Java: o ZIP precisa ser hospedado em uma URL pública. Configurar java-pack.url;
+/gpg pack solicita seu download, usando SHA-1 do arquivo gerado. Opcionalmente
+habilitar java-pack.send-on-join. O plugin não hospeda arquivos pela internet.
+Também é possível instalar o ZIP manualmente no cliente durante o teste.
+
+Bedrock: o plugin registra seu mcpack pelo evento público do Geyser. O pack com
+o mesmo UUID é substituído apenas na lista de execução; nenhum pack de origem
+é apagado. O usuário deve aceitar os recursos para ver o conteúdo.
+Não copiar outro exemplar deste mesmo pack para Geyser/packs.
+
+CONTEÚDO DESTA BUILD
+- Um único ID goldenpot:ambrosio_ore.
+- Item com PDC e item_model; bloco usa estado de note_block, sem entidades.
+- Arte de Ambrósio 16x16 original do EtherTexture Java v0.0.9.1.
+- Mesmo PNG no bloco e item Bedrock; item usa block_placer e ícone do bloco.
+- Identidade do bloco no PDC do chunk, coordenadas locais e altura.
+- Quebra com drop próprio; criativo sem drop.
+- Pistões e explosões não movimentam/destroem o bloco de teste.
+- Cancelamento de afinação e atualizações de física do bloco customizado.
+- Não há loop global, Armor Stands, displays ou banco externo.
+- Recursos originais são extraídos em sources/ sem sobrescrita nas reinicializações.
+- Saídas reconstruídas de forma determinística; conflitos de recursos são rejeitados.
+
+LIMITAÇÕES EXPLÍCITAS
+Só o bloco de Ambrósio desta preview tem lógica própria. A presença das demais
+texturas não cria automaticamente os respectivos itens, receitas ou mecânicas.
+Ainda não há importador CraftEngine/Oraxen/Rainbow, mesclagem de mappings de
+terceiros, móveis, editor de receitas, animações condicionais, mineração customizada
+ou integração com Terra2/WorldEdit. O tempo de quebra usa a base vanilla.
+O estado note_block[instrument=flute,note=24,powered=false] fica reservado no
+pack; um note block vanilla ajustado exatamente assim também terá esse visual.
+Edição externa do mundo sem eventos pode invalidar os registros de posição.
+O registry.json é um relatório desta preview, não um arquivo de configuração.
+
+VALIDAÇÃO EXECUTADA
+Compilação contra APIs reais, sem stubs. Testes executados de:
+- Preservação byte a byte de todas as entradas Java originais;
+- Preservação de recursos Bedrock, exceto manifest e atlas estendidos;
+- Preservação de todas as entradas anteriores dos dois atlas;
+- Igualdade do PNG entre edições;
+- Reconstrução determinística;
+- Rejeição de conflitos e caminhos ZIP inseguros;
+- Sintaxe JSON dos dois packs gerados.
+Não houve execução em servidor Paper nem inspeção em clientes Minecraft.
+A equivalência visual e as interações ainda precisam de teste no jogo.
+
+VALIDAÇÃO NO JOGO
+- Java: ativar o ZIP gerado; Bedrock: aceitar pack do Geyser.
+- /gpg status deve informar blocos=true, itens=true, pack=true no Geyser.
+- Comparar bloco colocado, item na mão/inventário e item dropado em ambos.
+- Colocar, sair da área, voltar, reiniciar e quebrar em sobrevivência.
+- Testar proteção de terreno, cancelamento de quebra/colocação e inventário cheio.
+
+FONTES ESTUDADAS
+Oraxen JAR: NoteBlockMechanicFactory, createNoteBlockData, getBlockstateVariantName;
+Geyser JAR: APIs de blocos, itens v2, pack e eventos de inicialização.
+Documentação oficial:
+https://docs.oraxen.com/developers/api
+https://xiao-momi.github.io/craft-engine-wiki/configuration/block/
+https://geysermc.org/wiki/geyser/custom-blocks/
+https://geysermc.org/wiki/geyser/custom-items/
+A implementação é própria; os JARs de terceiros não são embutidos ou copiados.
+Os packs oficiais enviados são incorporados como recursos-base.
+Código-fonte e testes desta build estão em META-INF/goldenpotgen-source/.
