@@ -1,0 +1,224 @@
+{
+  "format_version": 1,
+  "blocks": {
+    "minecraft:light": {
+      "name": "aeternum_food_crop",
+      "display_name": "Cultivo de Aeternum",
+      "geometry": "geometry.aeternum.crop_fixed",
+      "material_instances": {
+        "*": {
+          "texture": "aeternum.tomato_stage_0",
+          "render_method": "alpha_test",
+          "face_dimming": false,
+          "ambient_occlusion": false
+        }
+      },
+      "collision_box": {
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "size": [
+          0,
+          0,
+          0
+        ]
+      },
+      "selection_box": {
+        "origin": [
+          -6,
+          0,
+          -6
+        ],
+        "size": [
+          12,
+          16,
+          12
+        ]
+      },
+      "light_dampening": 0,
+      "place_air": false,
+      "included_in_creative_inventory": false,
+      "only_override_states": true,
+      "state_overrides": {
+        "level=4,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.tomato_stage_0",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=5,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.tomato_stage_1",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=6,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.tomato_stage_2",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=7,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.tomato_stage_3",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=8,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.onion_stage_0",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=9,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.onion_stage_1",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=10,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.onion_stage_2",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=11,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.onion_stage_3",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=12,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_seedling",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=13,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_stalk",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=14,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_young_top",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=15,waterlogged=false": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_ripe_top",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=12,waterlogged=true": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_seedling",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=13,waterlogged=true": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_stalk",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=14,waterlogged=true": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_young_top",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        },
+        "level=15,waterlogged=true": {
+          "geometry": "geometry.aeternum.crop_fixed",
+          "material_instances": {
+            "*": {
+              "texture": "aeternum.rice_ripe_top",
+              "render_method": "alpha_test",
+              "face_dimming": false,
+              "ambient_occlusion": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

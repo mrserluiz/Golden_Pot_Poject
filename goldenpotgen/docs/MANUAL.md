@@ -1,11 +1,11 @@
-# Manual do administrador — 0.2.0-preview
+# Manual do administrador — 0.2.1-preview
 
 ## Requisitos e instalação
 
 A compilação utilizou Paper API 1.21.11-R0.1 build 91 e o Geyser-Spigot 2.11.3-SNAPSHOT fornecido pelo servidor. Use o Java exigido pelo Paper (21 ou superior conforme a versão do servidor). Não foi validada compatibilidade com outras APIs Geyser, Paper 26.x ou Folia.
 
 1. Prepare um servidor de teste separado, sem CraftEngine, Oraxen ou Nexo disputando estados de blocos. Não remova gerenciadores de um mundo existente para testar: esta preview não migra seus registros.
-2. Coloque `GoldenPotGen-0.2.0-preview.jar` em `plugins/`. Mantenha Geyser-Spigot e a infraestrutura Floodgate usada no servidor. Eles são externos ao JAR.
+2. Coloque `GoldenPotGen-0.2.1-preview.jar` em `plugins/`. Mantenha Geyser-Spigot e a infraestrutura Floodgate usada no servidor. Eles são externos ao JAR.
 3. Habilite conteúdo personalizado na configuração da versão instalada do Geyser.
 4. Reinicie completamente. Não utilize PlugMan nem reload: os registros Geyser dependem da inicialização.
 5. Execute `/gpg status`, aceite os packs e use `/gpg give` no jogo.
@@ -64,3 +64,7 @@ Tempo de mineração é vanilla. Pistões e explosões são bloqueados para o bl
 - **Falha de geração:** examine o console; o compilador rejeita recursos conflitantes, entradas ZIP duplicadas/inseguras e limites de tamanho.
 
 Esta versão não tem atualização automática nem migração reversa. Antes de desinstalar, remova os blocos de teste e guarde backup do mundo e da pasta do plugin.
+
+## Mappings herdados
+
+A versão 0.2.1 exporta os mappings enviados antes da habilitação do Geyser e preserva arquivos existentes. Consulte [Mappings, conflitos e recursos ausentes](MAPPINGS.md). Reinicie por completo; caso o Geyser já tenha carregado os registros nessa versão, reinicie novamente. Não instale uma segunda cópia manual.

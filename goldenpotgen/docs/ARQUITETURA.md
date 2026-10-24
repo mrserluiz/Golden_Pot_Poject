@@ -17,7 +17,7 @@ O PNG oficial é compartilhado entre as representações geradas de Ambrósio. A
 
 ## Compilador de recursos
 
-Preserva entradas Java e recursos Bedrock, estendendo atlas e atualizando versão do manifesto Bedrock. Rejeita colisões de recursos diferentes, duplicatas e caminhos ZIP inseguros. Limites: 32 MiB por entrada e 256 MiB descompactados por pack. Escreve por arquivo temporário e tenta movimentação atômica, com alternativa quando indisponível. Não há mesclagem dos mappings Rainbow nesta preview.
+Preserva entradas Java e recursos Bedrock, estendendo atlas e atualizando versão do manifesto Bedrock. Rejeita colisões de recursos diferentes, duplicatas e caminhos ZIP inseguros. Limites: 32 MiB por entrada e 256 MiB descompactados por pack. Escreve por arquivo temporário e tenta movimentação atômica, com alternativa quando indisponível. Os JSONs Geyser fornecidos são importados pelo instalador descrito em MAPPINGS.md; ainda não há scanner Rainbow ou conversor genérico.
 
 ## Compilar a partir do código
 
@@ -31,7 +31,7 @@ javac --release 21 -cp 'lib/*' -d build/classes src/main/java/br/com/ethercraft/
 cp -R src/main/resources/. build/classes/
 javac --release 21 -cp 'lib/*:build/classes' -d build/test-classes src/test/java/br/com/ethercraft/goldenpot/ResourceTest.java
 java -cp 'lib/*:build/classes:build/test-classes' br.com.ethercraft.goldenpot.ResourceTest src/main
-jar --create --file build/GoldenPotGen-0.2.0-preview.jar -C build/classes .
+jar --create --file build/GoldenPotGen-0.2.1-preview.jar -C build/classes .
 ```
 
 A geração por esse procedimento não promete igualdade byte a byte do JAR distribuído, cujo empacotamento também inclui fontes. O teste recebe um diretório contendo `resources/` e cria `test-output/` nele. Em Windows, adapte separadores de classpath e comandos de cópia.
@@ -48,3 +48,7 @@ CraftEngine e Oraxen são referências de mecanismos de estados vanilla; os even
 - https://xiao-momi.github.io/craft-engine-wiki/configuration/block/
 - https://geysermc.org/wiki/geyser/custom-blocks/
 - https://geysermc.org/wiki/geyser/custom-items/
+
+## Instalador de mappings
+
+`MappingInstaller` prepara as fontes, exporta JSONs no diretório público do Geyser, verifica seletores existentes e registra conflitos. A auditoria inclui ícones dentro de grupos. Para executar o teste adicional, compile também `MappingTest.java` com o mesmo classpath de testes e execute `br.com.ethercraft.goldenpot.MappingTest src/main` após `ResourceTest`.

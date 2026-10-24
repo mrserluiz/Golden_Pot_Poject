@@ -1,4 +1,4 @@
-GoldenPotGen 0.2.0-preview — EtherCraft
+GoldenPotGen 0.2.1-preview — EtherCraft
 
 UM PLUGIN, DOIS PACKS
 Plugin independente de CraftEngine, Oraxen, MeowFurniture e RecipeCrafter.
@@ -12,7 +12,7 @@ Requisitos de compilação utilizados:
 Não há promessa de compatibilidade com Geyser antigo, Folia ou outras versões Paper.
 
 INSTALAÇÃO EM SERVIDOR DE TESTE
-1. Colocar somente GoldenPotGen-0.2.0-preview.jar em plugins/.
+1. Colocar somente GoldenPotGen-0.2.1-preview.jar em plugins/.
 2. Usar Geyser-Spigot 2.11.3-SNAPSHOT, com custom content habilitado.
 3. Reiniciar completamente. Não usar PlugMan ou reload para registros Geyser.
 4. Executar /gpg status. Aguardar o servidor terminar de iniciar.
@@ -53,8 +53,9 @@ CONTEÚDO DESTA BUILD
 LIMITAÇÕES EXPLÍCITAS
 Só o bloco de Ambrósio desta preview tem lógica própria. A presença das demais
 texturas não cria automaticamente os respectivos itens, receitas ou mecânicas.
-Ainda não há importador CraftEngine/Oraxen/Rainbow, mesclagem de mappings de
-terceiros, móveis, editor de receitas, animações condicionais, mineração customizada
+Há importação dos JSONs Geyser enviados, com preservação de arquivos existentes.
+Ainda não há importador de mecânicas CraftEngine/Oraxen/Rainbow, móveis,
+editor de receitas, animações condicionais, mineração customizada
 ou integração com Terra2/WorldEdit. O tempo de quebra usa a base vanilla.
 O estado note_block[instrument=flute,note=24,powered=false] fica reservado no
 pack; um note block vanilla ajustado exatamente assim também terá esse visual.
@@ -91,3 +92,20 @@ https://geysermc.org/wiki/geyser/custom-items/
 A implementação é própria; os JARs de terceiros não são embutidos ou copiados.
 Os packs oficiais enviados são incorporados como recursos-base.
 Código-fonte e testes desta build estão em META-INF/goldenpotgen-source/.
+
+MAPPINGS NESTA VERSÃO
+Os quatro JSONs originais são incorporados em mappings/ e extraídos, sem
+sobrescrita, em sources/mappings/. Na inicialização, antes de habilitar o
+Geyser, são exportados para Geyser-Spigot/custom_mappings/goldenpotgen_*.json.
+Arquivos alheios permanecem intocados. Seletores já presentes têm prioridade;
+conflitos e duplicatas são relatados. Edições manuais em arquivos gerenciados
+são preservadas e bloqueiam a atualização automática daquele arquivo.
+Consulte reports/mapping-install.json e reports/mapping-assets.json.
+A auditoria recursiva identificou 66 ícones ausentes nos packs originais.
+A picareta celeste usa agora seu PNG Java oficial no Bedrock; restam 65
+ícones sem recursos correspondentes, incluindo variantes de armadura topázio.
+Essas referências foram mantidas; não há arte genérica nem promessa de
+equivalência para conteúdo sem arquivos. O .md parcial não é instalado.
+Reinicie completamente o servidor e confira o log Geyser. Se a versão instalada
+carregar registros antes da exportação, é necessário um segundo reinício.
+Não copie os mappings do kit por cima dos existentes; o plugin os instala.

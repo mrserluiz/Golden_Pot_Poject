@@ -1,5 +1,5 @@
 name: GoldenPotGen
-version: 0.2.0-preview
+version: 0.2.1-preview
 main: br.com.ethercraft.goldenpot.GoldenPotGen
 api-version: '1.21.11'
 author: EtherCraft

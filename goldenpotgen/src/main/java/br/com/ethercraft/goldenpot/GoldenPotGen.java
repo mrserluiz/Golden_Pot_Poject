@@ -19,12 +19,15 @@ public final class GoldenPotGen extends JavaPlugin implements Listener {
  private BedrockBridge bridge;
  private boolean ready, enabled;
  private String failure="";
+ private String mappingStatus="not installed";
  @Override public void onLoad(){
   try{
    saveDefaultConfig();enabled=getConfig().getBoolean("experimental-blocks",true);
    for(String name:List.of("CraftEngine","Oraxen","Nexo"))if(getServer().getPluginManager().getPlugin(name)!=null)enabled=false;
    Resources.prepare(getDataFolder().toPath(),this::getResource,enabled);ready=true;
-   if(getServer().getPluginManager().getPlugin("Geyser-Spigot")!=null){bridge=new BedrockBridge(this);bridge.attach();}
+   if(getServer().getPluginManager().getPlugin("Geyser-Spigot")!=null){var geyser=getServer().getPluginManager().getPlugin("Geyser-Spigot");
+    mappingStatus=MappingInstaller.install(getDataFolder().toPath(),geyser.getDataFolder().toPath(),getLogger()::info);
+    bridge=new BedrockBridge(this);bridge.attach();}
   }catch(Exception|LinkageError ex){failure=ex.toString();getLogger().severe("Initialization failed: "+failure);ready=false;}
  }
  @Override public void onEnable(){
@@ -32,7 +35,7 @@ public final class GoldenPotGen extends JavaPlugin implements Listener {
   enabled=ready&&enabled;
   for(String name:List.of("CraftEngine","Oraxen","Nexo"))if(getServer().getPluginManager().getPlugin(name)!=null){enabled=false;getLogger().warning("Custom block placement disabled: carrier conflict requires review with "+name);}
   getServer().getPluginManager().registerEvents(this,this);
-  getLogger().info("GoldenPotGen 0.2.0-preview. One plugin, two resource packs. Experimental blocks: "+enabled);
+  getLogger().info("GoldenPotGen 0.2.1-preview. One plugin, two resource packs. Experimental blocks: "+enabled);
  }
  @Override public void onDisable(){if(bridge!=null)bridge.close();}
  private NamespacedKey position(Block b){return new NamespacedKey(this,"b_"+(b.getX()&15)+"_"+(b.getY()-b.getWorld().getMinHeight())+"_"+(b.getZ()&15));}
@@ -86,9 +89,10 @@ public final class GoldenPotGen extends JavaPlugin implements Listener {
   String sub=args.length==0?"status":args[0].toLowerCase(Locale.ROOT);
   switch(sub){
    case "status" -> {
-    sender.sendMessage("§6GoldenPotGen 0.2.0-preview");sender.sendMessage("§7Packs: "+(ready?"gerados":"falha: "+failure));
+    sender.sendMessage("§6GoldenPotGen 0.2.1-preview");sender.sendMessage("§7Packs: "+(ready?"gerados":"falha: "+failure));
     sender.sendMessage("§7Bloco experimental: "+enabled+" | ID: "+Resources.ID);
     sender.sendMessage("§7Geyser: "+(bridge==null?"ausente":"blocos="+bridge.blocks+", itens="+bridge.items+", pack="+bridge.pack));
+    sender.sendMessage("§7Mappings: "+mappingStatus);
     sender.sendMessage("§7A migração de outros plugins e móveis ainda não está implementada.");
    }
    case "give" -> {

@@ -1,5 +1,7 @@
 # Evolução planejada
 
+Entregue em 0.2.1-preview: instalação dos JSONs Geyser enviados, preservação de definições existentes e auditoria recursiva de ícones. A migração completa de mecânicas continua pendente.
+
 Objetivo: um único plugin gerenciando blocos, itens, móveis, receitas e representações Java/Bedrock, substituindo gradualmente os gerenciadores atuais. Os marcos abaixo são planos, sem promessa de versão ou prazo.
 
 | Marco | Critério de conclusão |

@@ -1,12 +1,12 @@
 # GoldenPotGen e Golden Pot
 
-Repositório oficial do projeto EtherCraft. O **GoldenPotGen 0.2.0-preview** é o novo plugin Paper: um único JAR, dois packs separados (Java e Bedrock) e ponte com Geyser.
+Repositório oficial do projeto EtherCraft. O **GoldenPotGen 0.2.1-preview** é o novo plugin Paper: um único JAR, dois packs separados (Java e Bedrock) e ponte com Geyser.
 
 - [Documentação do GoldenPotGen](goldenpotgen/README.md)
 - [Manual de instalação e comandos](goldenpotgen/docs/MANUAL.md)
 - [Arquitetura e compilação](goldenpotgen/docs/ARQUITETURA.md)
 - [Roadmap](goldenpotgen/docs/ROADMAP.md)
-- [Download da preview](goldenpotgen/dist/GoldenPotGen-0.2.0-preview.jar?raw=true)
+- [Download da preview](goldenpotgen/dist/GoldenPotGen-0.2.1-preview.jar?raw=true)
 
 **Preview experimental:** contém um item/bloco de Ambrósio e recursos oficiais EtherTexture. Ainda precisa de testes no Paper e nos clientes Java/Bedrock; migração completa, móveis e crafting não estão implementados.
 
@@ -187,3 +187,5 @@ to every tagged release.
 - **v0.3**: semantic Geyser mapping merge, validation, and rebuilt `pack.zip`.
 
 The original files will remain untouched by default in every future version.
+
+Atualização 0.2.1: [integração dos mappings Geyser e recursos ausentes](goldenpotgen/docs/MAPPINGS.md) · [kit completo](goldenpotgen/dist/GoldenPotGen-0.2.1-preview-kit.zip?raw=true).

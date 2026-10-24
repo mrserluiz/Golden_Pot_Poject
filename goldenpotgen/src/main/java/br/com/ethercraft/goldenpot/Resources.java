@@ -39,7 +39,15 @@ final class Resources {
    Path source=root.resolve("sources/"+edition+"-base.zip");
    if(!Files.exists(source))try(InputStream in=resource.apply("packs/"+edition+"-base.zip")){if(in==null)throw new IOException("Embedded pack missing");Files.copy(in,source);}
   }
+  MappingInstaller.prepare(root,resource);
   Map<String,byte[]> j=load(root.resolve("sources/java-base.zip")),b=load(root.resolve("sources/bedrock-base.zip"));
+  MappingInstaller.repairOfficialPickaxe(j,b);
+  MappingInstaller.audit(root,j,b);
+  // Keep official pack identity; bump only generated version to invalidate client cache.
+  JsonObject manifest=object(new String(b.get("manifest.json"),java.nio.charset.StandardCharsets.UTF_8));
+  manifest.getAsJsonObject("header").add("version",JsonParser.parseString("[0,2,1]"));
+  for(JsonElement module:manifest.getAsJsonArray("modules"))module.getAsJsonObject().add("version",JsonParser.parseString("[0,2,1]"));
+  b.put("manifest.json",json(manifest));
   if(!experimental){write(root.resolve("generated/EtherTexture-Java-GoldenPotGen.zip"),j);write(root.resolve("generated/EtherTexture-Bedrock-GoldenPotGen.mcpack"),b);return;}
   byte[] png=j.get(TEXTURE);if(png==null)throw new IOException("Official Ambrosio texture missing");
   // Use multipart inverse conditions to preserve every other state, including new instruments.
@@ -56,11 +64,6 @@ final class Resources {
    if(t.has("gpg_ambrosio_ore"))throw new IOException("Reserved atlas ID already occupied");
    t.add("gpg_ambrosio_ore",object("{\"textures\":\"textures/goldenpot/ambrosio_ore\"}"));b.put(key,json(o));
   }
-  // Keep official pack identity; bump only generated version to invalidate client cache.
-  JsonObject manifest=object(new String(b.get("manifest.json"),java.nio.charset.StandardCharsets.UTF_8));
-  manifest.getAsJsonObject("header").add("version",JsonParser.parseString("[0,2,0]"));
-  for(JsonElement module:manifest.getAsJsonArray("modules"))module.getAsJsonObject().add("version",JsonParser.parseString("[0,2,0]"));
-  b.put("manifest.json",json(manifest));
   write(root.resolve("generated/EtherTexture-Java-GoldenPotGen.zip"),j);
   write(root.resolve("generated/EtherTexture-Bedrock-GoldenPotGen.mcpack"),b);
   Files.writeString(root.resolve("registry.json"),JSON.toJson(object("{\"schema\":1,\"id\":\"goldenpot:ambrosio_ore\",\"carrier\":\""+STATE+"\",\"item_model\":\"goldenpot:ambrosio_ore\",\"custom_model_data\":720001,\"bedrock_name\":\"gpg_ambrosio_ore\"}")));
